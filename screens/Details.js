@@ -48,7 +48,7 @@ export default class Details extends Component {
                         />
 
                         <View style={ styles.cardText }>
-                            <Text style={ styles.nameText }>Srivin Prabhash Fernando</Text>
+                            <Text style={ styles.nameText }>{ this.props.navigation.getParam('name') }</Text>
                             <Text style={ styles.indexText }>#28437</Text>
                         </View>
 

@@ -33,15 +33,22 @@ export default class QRScanner extends Component {
 
             this.requestStudentDetails(QRDetails[1])
 
+            // this.scanner.reactivate()
+            this.props.passRef = this.scanner
+            // console.log( this.props.switchValue )
+
         }
 
-        if ( this.props.switchValue == 'attendance'){
-            this.props.openModal();
+        // DETAILS
+        
+
+        if ( this.props.switchValue == 'attendance') {
+            this.props.openModal({ name: "test" });
         } else if ( this.props.switchValue == 'details' ){
-            this.props.navigation.navigate('Details');
+            this.props.navigation.navigate('Details', {
+                name: "Shyamin Ayesh"
+            });
         }
-
-        // 
 
     }
 
@@ -54,9 +61,10 @@ export default class QRScanner extends Component {
         return (
             <View>
                 <QRCodeScanner
+                ref={node => { this.scanner = node }}
                 onRead={ this.onSuccess }
                 topViewStyle={ styles.topContent }
-                bottomViewStyle={ styles.bottomContent }/>
+                bottomViewStyle={ styles.bottomContent } />
             </View>
         )
     }
