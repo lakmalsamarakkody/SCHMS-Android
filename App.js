@@ -10,7 +10,6 @@ import {createStackNavigator} from 'react-navigation-stack';
 
 import Login from './screens/Login'
 import Scan from './screens/Scan'
-import Details from './screens/Details'
 
 
 const MainNavigator = createStackNavigator(
@@ -20,10 +19,6 @@ const MainNavigator = createStackNavigator(
 		},
 		Scan: {
 			screen: Scan
-		},
-		Details: {
-			screen: Details,
-			headerTitle: 'Fuck'
 		}
 	},
 	{

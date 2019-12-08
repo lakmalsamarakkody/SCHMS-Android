@@ -16,17 +16,16 @@ import {
     TouchableOpacity,
     Dimensions,
     ToastAndroid,
-    Vibration
+    Vibration,
+    Button
 } from 'react-native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
-
 import SwitchSelector from 'react-native-switch-selector'
 import Modal from 'react-native-modalbox';
-
-// import QRScanner from '../components/QRScanner'
 import QRCodeScanner from 'react-native-qrcode-scanner'
 import { SafeAreaView } from 'react-navigation';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 
 var screen = Dimensions.get('window');
@@ -45,7 +44,9 @@ export default class Scan extends Component {
             switchValue: 'attendance',
             modal_name: null,
             modal_class: null,
-            data: {}
+            data: {},
+            studentData: {},
+            staffData: {}
         };
     }
 
@@ -53,11 +54,6 @@ export default class Scan extends Component {
         header: null
     }
 
-    attendanceModalCancelAction = () => {
-
-        this.refs.modal1.close()
-
-    }
 
     attendanceModalDoneAction = () => {
 
@@ -79,7 +75,7 @@ export default class Scan extends Component {
         .then(Response => {
             if ( Response.status === 'success' ) {
                 Vibration.vibrate(100);
-                ToastAndroid.showWithGravityAndOffset(
+                ToastAndroid.showWithGravity3AndOffset(
                     'Successfully Makred !',
                     ToastAndroid.SHORT,
                     ToastAndroid.BOTTOM,
@@ -97,9 +93,7 @@ export default class Scan extends Component {
                 )
             }
         })
-        
         this.refs.modal1.close();
-
     }
 
     changeSwitchValue = (value) => {
@@ -110,8 +104,13 @@ export default class Scan extends Component {
 
 
 
-    openModal = () => {
+    openAttendanceModal = () => {
         this.refs.modal1.open()
+    }
+
+
+    openDetailsModal = () => {
+        this.refs.detailModal.open()
     }
 
 
@@ -145,34 +144,120 @@ export default class Scan extends Component {
         })
         .then(res => res.json())
         .then(Response => {
-            if ( QRType === 'student' ) {
+
+            this.setState({
+                studentData: {},
+                staffData: {}
+            })
+
+            if ( Response.status === 'success' ) {
                 this.setState({
-                    modal_name: Response.data.name.full,
-                    modal_class: "Class : " + Response.data.class.grade + '-' + Response.data.class.name
-                })
-            } else {
-                this.setState({
-                    modal_name: Response.data.name.full,
-                    modal_class: "Staff"
+                    data: Response.data
                 })
             }
+
+            if ( QRType === 'student' ) {
+                // this.setState({
+                //     modal_name: Response.data.name.full,
+                //     modal_class: "Class : " + Response.data.class.grade + '-' + Response.data.class.name
+                // })
+                this.setState({
+                    studentData: Response.data
+                })
+
+                console.log(this.state.studentData.name)
+            } else {
+                // this.setState({
+                //     modal_name: Response.data.name.full,
+                //     modal_class: "Staff"
+                // })
+                this.setState({
+                    staffData: Response.data
+                })
+            }
+
+            // console.log(Response)
         })
 
-
         if ( this.state.switchValue == 'attendance'){
-            this.openModal()
-        } else if ( this.state.switchValue == 'details' ){
-            this.navigation.navigate('Details', {
-                name: "Shyamin Ayesh"
-            });
+            this.openAttendanceModal()
+        } else if ( this.state.switchValue == 'details' ) {
+            this.openDetailsModal()
         }
     }
+
+
 
     onClose = () => {
         this.QRScanner.reactivate()
     }
 
+    renderStudentDetailModal = () => {
+        if ( this.state.studentData !== {} ) {
+            <>
+            <Modal
+                style={ styles.detailsModal }
+                ref={"detailModal"}
+                swipeToClose={true}
+                onClosed={this.onClose}
+                onOpened={this.onOpen}
+                onClosingState={this.onClosingState}
+            >
 
+                <Text style={ styles.heading }>User Details</Text>
+
+                <Image
+                    source={{ uri: 'https://pbs.twimg.com/profile_images/915314874212868096/pn-v8Ru7_400x400.jpg'}}
+                    style={ styles.profilePicture }
+                />
+
+                <Text style={ styles.nameText }>{ this.state.studentData.name.full }</Text>
+                <Text style={ styles.classText }>{ this.state.studentData.name.full }</Text>
+
+                {/* DATA */}
+                <View style={ styles.dataWrapper }>
+
+                    {/* EACH DATA */}
+                    <View style={ styles.dataRow }>
+                        <Text style={ styles.dataName }><FontAwesome name='home' size={15}></FontAwesome> &nbsp;&nbsp; Class</Text>
+                        <Text style={ styles.dataValue }>11 - A</Text>
+                    </View>
+
+                    {/* EACH DATA */}
+                    <View style={ styles.dataRow }>
+                        <Text style={ styles.dataName }><FontAwesome name='birthday-cake' size={15}></FontAwesome> &nbsp;&nbsp; Birthday</Text>
+                        <Text style={ styles.dataValue }>18, March 1998</Text>
+                    </View>
+
+                    {/* EACH DATA */}
+                    <View style={ styles.dataRow }>
+                        <Text style={ styles.dataName }><FontAwesome name='calendar' size={15}></FontAwesome> &nbsp;&nbsp; Age</Text>
+                        <Text style={ styles.dataValue }>21</Text>
+                    </View>
+
+                    {/* EACH DATA */}
+                    <View style={ styles.dataRow }>
+                        <Text style={ styles.dataName }><FontAwesome name='map-marker' size={15}></FontAwesome> &nbsp;&nbsp; City</Text>
+                        <Text style={ styles.dataValue }>645</Text>
+                    </View>
+
+                    <View style={{ padding: 50, alignItems: 'center', }}>
+                        <TouchableOpacity style={ styles.successButton } onPress={ () => this.refs.detailModal.close() }>
+
+                            <View style={{flexGrow: 1, justifyContent:'center', alignItems: 'center', flexDirection: 'row' }}>
+                                <Icon name="ios-checkmark" size={30} color={'white'} />
+                                <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}> &nbsp; OK</Text>
+                            </View>
+                            
+                        </TouchableOpacity>
+                    </View>
+
+                </View>
+                
+            </Modal>
+            </>
+        }
+    }
 
     render = () => {
         return (
@@ -187,7 +272,6 @@ export default class Scan extends Component {
                         onRead={ this.onSuccess }
                         topViewStyle={ styles.topContent }
                         bottomViewStyle={ styles.bottomContent } />
-                    {/* <QRScanner openModal={this.openModal} navigation={this.props.navigation} /> */}
                     <View style={{ marginTop: 50, marginHorizontal: 25 }}>
                         <SwitchSelector
                             options={[
@@ -204,13 +288,14 @@ export default class Scan extends Component {
                             valuePadding={1}
                             hasPadding={true} />
                     </View>
+
+                    <Button title={'Fuck You'} onPress={ () => this.refs.detailModal.open() }></Button>
                     
                 </ScrollView>
-                
             </SafeAreaView>
 
-
-            <Modal
+            {/* ATTENDANCE MODAL */}
+            {/* <Modal
                 style={ styles.attendanceModal }
                 ref={"modal1"}
                 swipeToClose={this.state.swipeToClose}
@@ -226,18 +311,18 @@ export default class Scan extends Component {
                 />
 
                 <Text style={ styles.nameText }>{ this.state.modal_name }</Text>
-                <Text style={ styles.classText }>{ this.state.modal_class }</Text>
+                <Text style={ styles.classText }>{ this.state.studentData }</Text>
 
                 <View style={ styles.buttonWrapper }>
 
-                    <TouchableOpacity style={ styles.markAttendanceBtnDone } onPress={ () => this.attendanceModalDoneAction() }>
+                    <TouchableOpacity style={ styles.successButton } onPress={ () => this.attendanceModalDoneAction() }>
                         <View style={{flexGrow: 1, justifyContent:'center', alignItems: 'center', flexDirection: 'row' }}>
                             <Icon name="ios-checkmark" size={30} color={'#FFF'} />
                             <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}> &nbsp; Done</Text>
                         </View>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={ styles.markAttendanceBtnCancel } onPress={ () => this.attendanceModalCancelAction() }>
+                    <TouchableOpacity style={ styles.dangerButton } onPress={ () => this.refs.modal1.close() }>
 
                         <View style={{flexGrow: 1, justifyContent:'center', alignItems: 'center', flexDirection: 'row' }}>
                             <Icon name="ios-close" size={30} color={'#e2193e'} />
@@ -248,7 +333,13 @@ export default class Scan extends Component {
 
                 </View>
             
-            </Modal>
+            </Modal> */}
+
+
+
+            {/* STUDENT DETAILS MODAL */}
+            { this.renderStudentDetailModal() }
+            
             </>
         )
     }
@@ -316,7 +407,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row'
     },
 
-    markAttendanceBtnDone: {
+    successButton: {
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 50,
@@ -328,7 +419,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 
-    markAttendanceBtnCancel: {
+    dangerButton: {
         marginTop: 50,
         borderRadius: 1000,
         padding: 10,
@@ -343,5 +434,38 @@ const styles = StyleSheet.create({
     },
     bottomContent: {
         marginBottom: 45
+    },
+
+
+    detailsModal: {
+        marginTop: 50,
+        borderTopLeftRadius: 15,
+        borderTopRightRadius: 15,
+        padding: 15,
+        alignItems: 'center',
+    },
+
+    dataWrapper: {
+        marginTop: 50,
+        alignSelf: 'stretch'
+    },
+
+    dataRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginHorizontal: 35,
+        paddingVertical: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ECECEC',
+    },
+    
+    dataName: {
+        fontSize: 14,
+        color: '#a0a0a0',
+    },
+
+    dataValue: {
+        fontSize: 17,
     }
 });
