@@ -14,7 +14,7 @@ import {
     Text,
     TextInput,
     Button,
-    Alert,
+    Alert
 } from 'react-native';
 
 import { SafeAreaView } from 'react-navigation';
@@ -23,6 +23,12 @@ export default class Login extends Component {
 
     constructor(props) {
         super(props);
+
+        this.state = {
+            username: null,
+            password: null
+        }
+
     }
 
     static navigationOptions = {
@@ -30,7 +36,26 @@ export default class Login extends Component {
     }
 
     onLoginPress = () => {
-        this.props.navigation.replace('Scan');
+
+        let payload = new FormData
+        payload.append('username', this.state.username)
+        payload.append('password', this.state.password)
+
+        fetch("http://192.168.1.7:9090/api/auth", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            },
+            body: payload,
+        })
+        .then(res => res.json())
+        .then(Response => {
+            if ( Response.status === 'success' ) {
+                this.props.navigation.replace('Scan')
+            } else {
+                Alert.alert("Error", Response.error.message)
+            }
+        })
     }
 
     render = () => {
@@ -44,11 +69,11 @@ export default class Login extends Component {
                         <Text style={ styles.tagLine }>David Silva M.M.V</Text>
                     </View>
 
-                    <Text style={ styles.inputLabel }>Email Address</Text>
-                    <TextInput style={ styles.input } />
+                    <Text style={ styles.inputLabel }>Username</Text>
+                    <TextInput style={ styles.input } onChangeText={(username) => this.setState({username})} />
 
                     <Text style={ styles.inputLabel }>Password</Text>
-                    <TextInput style={ styles.input } secureTextEntry={true} />
+                    <TextInput style={ styles.input } secureTextEntry={true} onChangeText={(password) => this.setState({password})} />
 
                     <Button
                         title="Sign In"
