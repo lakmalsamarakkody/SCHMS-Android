@@ -22,7 +22,7 @@ const MainNavigator = createStackNavigator(
 		}
 	},
 	{
-		initialRouteName: 'Scan'
+		initialRouteName: 'Login'
 	}
 );
 

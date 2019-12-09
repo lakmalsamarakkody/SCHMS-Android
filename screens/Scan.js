@@ -42,11 +42,26 @@ export default class Scan extends Component {
             qr_id: null,
             qr_type: null,
             switchValue: 'attendance',
-            modal_name: null,
-            modal_class: null,
-            data: {},
-            studentData: {},
-            staffData: {}
+            attendanceModalData: {
+                name: "Srivin",
+                type: "Staff"
+            },
+            studentData: {
+                name: null,
+                class: null,
+                dob: null,
+                gender: null,
+                city: null,
+                phone: null
+            },
+            staffData: {
+                name: null,
+                nic: null,
+                emp_no: null,
+                dob: null,
+                phone: null,
+                city: null                
+            }
         };
     }
 
@@ -93,8 +108,9 @@ export default class Scan extends Component {
                 )
             }
         })
-        this.refs.modal1.close();
+        this.refs.attendanceModal.close();
     }
+
 
     changeSwitchValue = (value) => {
         this.setState({
@@ -103,14 +119,18 @@ export default class Scan extends Component {
     }
 
 
-
     openAttendanceModal = () => {
-        this.refs.modal1.open()
+        this.refs.attendanceModal.open()
     }
 
 
-    openDetailsModal = () => {
-        this.refs.detailModal.open()
+    openStudentDetailModal = () => {
+        this.refs.studentDetailModal.open()
+    }
+
+
+    openStaffDetailModal = () => {
+        this.refs.staffDetailModal.open()
     }
 
 
@@ -125,9 +145,10 @@ export default class Scan extends Component {
 
         let QRDetails = e.data.split(":")
         let QRType = QRDetails[0]
+        
         this.setState({
             qr_id: QRDetails[1],
-            qr_type: QRType
+            qr_type: QRDetails[0]
         })
 
         // FETCH : DETAILS
@@ -145,44 +166,60 @@ export default class Scan extends Component {
         .then(res => res.json())
         .then(Response => {
 
+            // CLEAR
             this.setState({
                 studentData: {},
                 staffData: {}
             })
 
-            if ( Response.status === 'success' ) {
+            if ( this.state.switchValue == 'attendance' ){
+
                 this.setState({
-                    data: Response.data
+                    attendanceModalData: {
+                        name: Response.data.name.full,
+                        type: QRType.charAt(0).toUpperCase() + QRType.slice(1)
+                    }
                 })
+
+
+            } else if ( this.state.switchValue == 'details' ){
+
+                if ( QRType === 'student' ) {
+                    this.setState({
+                        studentData: {
+                            name: Response.data.name.full,
+                            class: Response.data.class.grade + '-' + Response.data.class.name,
+                            dob: Response.data.dob,
+                            gender: Response.data.gender,
+                            city: Response.data.address.city,
+                            phone: Response.data.phone[Object.keys(Response.data.phone)[0]]
+                        }
+                    })
+                } else {
+                    this.setState({
+                        staffData: {
+                            name: Response.data.name.full,
+                            nic: Response.data.nic,
+                            emp_no: Response.data.emp_no,
+                            dob: Response.data.dob,
+                            phone: Response.data.phone[Object.keys(Response.data.phone)[0]],
+                            city: Response.data.address.city
+                        }
+                    })
+                }
+
             }
 
-            if ( QRType === 'student' ) {
-                // this.setState({
-                //     modal_name: Response.data.name.full,
-                //     modal_class: "Class : " + Response.data.class.grade + '-' + Response.data.class.name
-                // })
-                this.setState({
-                    studentData: Response.data
-                })
-
-                console.log(this.state.studentData.name)
-            } else {
-                // this.setState({
-                //     modal_name: Response.data.name.full,
-                //     modal_class: "Staff"
-                // })
-                this.setState({
-                    staffData: Response.data
-                })
-            }
-
-            // console.log(Response)
         })
 
         if ( this.state.switchValue == 'attendance'){
             this.openAttendanceModal()
         } else if ( this.state.switchValue == 'details' ) {
-            this.openDetailsModal()
+            if ( QRType === 'student' ){
+                this.openStudentDetailModal()
+            } else if ( QRType === 'staff' ){
+                this.openStaffDetailModal()
+            }
         }
     }
 
@@ -190,73 +227,6 @@ export default class Scan extends Component {
 
     onClose = () => {
         this.QRScanner.reactivate()
-    }
-
-    renderStudentDetailModal = () => {
-        if ( this.state.studentData !== {} ) {
-            <>
-            <Modal
-                style={ styles.detailsModal }
-                ref={"detailModal"}
-                swipeToClose={true}
-                onClosed={this.onClose}
-                onOpened={this.onOpen}
-                onClosingState={this.onClosingState}
-            >
-
-                <Text style={ styles.heading }>User Details</Text>
-
-                <Image
-                    source={{ uri: 'https://pbs.twimg.com/profile_images/915314874212868096/pn-v8Ru7_400x400.jpg'}}
-                    style={ styles.profilePicture }
-                />
-
-                <Text style={ styles.nameText }>{ this.state.studentData.name.full }</Text>
-                <Text style={ styles.classText }>{ this.state.studentData.name.full }</Text>
-
-                {/* DATA */}
-                <View style={ styles.dataWrapper }>
-
-                    {/* EACH DATA */}
-                    <View style={ styles.dataRow }>
-                        <Text style={ styles.dataName }><FontAwesome name='home' size={15}></FontAwesome> &nbsp;&nbsp; Class</Text>
-                        <Text style={ styles.dataValue }>11 - A</Text>
-                    </View>
-
-                    {/* EACH DATA */}
-                    <View style={ styles.dataRow }>
-                        <Text style={ styles.dataName }><FontAwesome name='birthday-cake' size={15}></FontAwesome> &nbsp;&nbsp; Birthday</Text>
-                        <Text style={ styles.dataValue }>18, March 1998</Text>
-                    </View>
-
-                    {/* EACH DATA */}
-                    <View style={ styles.dataRow }>
-                        <Text style={ styles.dataName }><FontAwesome name='calendar' size={15}></FontAwesome> &nbsp;&nbsp; Age</Text>
-                        <Text style={ styles.dataValue }>21</Text>
-                    </View>
-
-                    {/* EACH DATA */}
-                    <View style={ styles.dataRow }>
-                        <Text style={ styles.dataName }><FontAwesome name='map-marker' size={15}></FontAwesome> &nbsp;&nbsp; City</Text>
-                        <Text style={ styles.dataValue }>645</Text>
-                    </View>
-
-                    <View style={{ padding: 50, alignItems: 'center', }}>
-                        <TouchableOpacity style={ styles.successButton } onPress={ () => this.refs.detailModal.close() }>
-
-                            <View style={{flexGrow: 1, justifyContent:'center', alignItems: 'center', flexDirection: 'row' }}>
-                                <Icon name="ios-checkmark" size={30} color={'white'} />
-                                <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}> &nbsp; OK</Text>
-                            </View>
-                            
-                        </TouchableOpacity>
-                    </View>
-
-                </View>
-                
-            </Modal>
-            </>
-        }
     }
 
     render = () => {
@@ -288,16 +258,14 @@ export default class Scan extends Component {
                             valuePadding={1}
                             hasPadding={true} />
                     </View>
-
-                    <Button title={'Fuck You'} onPress={ () => this.refs.detailModal.open() }></Button>
                     
                 </ScrollView>
             </SafeAreaView>
 
             {/* ATTENDANCE MODAL */}
-            {/* <Modal
+            <Modal
                 style={ styles.attendanceModal }
-                ref={"modal1"}
+                ref={"attendanceModal"}
                 swipeToClose={this.state.swipeToClose}
                 onClosed={this.onClose}
                 onOpened={this.onOpen}
@@ -310,8 +278,8 @@ export default class Scan extends Component {
                     source={{uri: 'https://pbs.twimg.com/profile_images/915314874212868096/pn-v8Ru7_400x400.jpg'}}
                 />
 
-                <Text style={ styles.nameText }>{ this.state.modal_name }</Text>
-                <Text style={ styles.classText }>{ this.state.studentData }</Text>
+                <Text style={ styles.nameText }>{ this.state.attendanceModalData.name }</Text>
+                <Text style={ styles.classText }>{ this.state.attendanceModalData.type }</Text>
 
                 <View style={ styles.buttonWrapper }>
 
@@ -322,7 +290,7 @@ export default class Scan extends Component {
                         </View>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={ styles.dangerButton } onPress={ () => this.refs.modal1.close() }>
+                    <TouchableOpacity style={ styles.dangerButton } onPress={ () => this.refs.attendanceModal.close() }>
 
                         <View style={{flexGrow: 1, justifyContent:'center', alignItems: 'center', flexDirection: 'row' }}>
                             <Icon name="ios-close" size={30} color={'#e2193e'} />
@@ -333,13 +301,140 @@ export default class Scan extends Component {
 
                 </View>
             
-            </Modal> */}
+            </Modal>
 
 
 
             {/* STUDENT DETAILS MODAL */}
-            { this.renderStudentDetailModal() }
+            <Modal
+                style={ styles.detailsModal }
+                ref={"studentDetailModal"}
+                swipeToClose={true}
+                onClosed={this.onClose}
+                onOpened={this.onOpen}
+                onClosingState={this.onClosingState}
+            >
+
+                <Text style={ styles.heading }>User Details</Text>
+
+                <Image
+                    source={{ uri: 'https://pbs.twimg.com/profile_images/915314874212868096/pn-v8Ru7_400x400.jpg'}}
+                    style={ styles.profilePicture }
+                />
+
+                <Text style={ styles.nameText }>{ this.state.studentData.name }</Text>
+                <Text style={ styles.classText }>Student</Text>
+
+                {/* DATA */}
+                <View style={ styles.dataWrapper }>
+
+                    {/* EACH DATA */}
+                    <View style={ styles.dataRow }>
+                        <Text style={ styles.dataName }><FontAwesome name='home' size={15}></FontAwesome> &nbsp;&nbsp; Class</Text>
+                        <Text style={ styles.dataValue }>{ this.state.studentData.class }</Text>
+                    </View>
+
+                    {/* EACH DATA */}
+                    <View style={ styles.dataRow }>
+                        <Text style={ styles.dataName }><FontAwesome name='birthday-cake' size={15}></FontAwesome> &nbsp;&nbsp; Birthday</Text>
+                        <Text style={ styles.dataValue }>{ this.state.studentData.dob }</Text>
+                    </View>
+
+                    {/* EACH DATA */}
+                    <View style={ styles.dataRow }>
+                        <Text style={ styles.dataName }><FontAwesome name='phone' size={15}></FontAwesome> &nbsp;&nbsp; Phone</Text>
+                        <Text style={ styles.dataValue }>{ this.state.studentData.phone }</Text>
+                    </View>
+
+                    {/* EACH DATA */}
+                    <View style={ styles.dataRow }>
+                        <Text style={ styles.dataName }><FontAwesome name='map-marker' size={15}></FontAwesome> &nbsp;&nbsp; City</Text>
+                        <Text style={ styles.dataValue }>{ this.state.studentData.city }</Text>
+                    </View>
+
+                    <View style={{ padding: 50, alignItems: 'center', }}>
+                        <TouchableOpacity style={ styles.successButton } onPress={ () => this.refs.studentDetailModal.close() }>
+
+                            <View style={{flexGrow: 1, justifyContent:'center', alignItems: 'center', flexDirection: 'row' }}>
+                                <Icon name="ios-checkmark" size={30} color={'white'} />
+                                <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}> &nbsp; OK</Text>
+                            </View>
+                            
+                        </TouchableOpacity>
+                    </View>
+
+                </View>
+                
+            </Modal>
             
+
+            {/* STAFF DETAILS MODAL */}
+            <Modal
+                style={ styles.detailsModal }
+                ref={"staffDetailModal"}
+                swipeToClose={true}
+                onClosed={this.onClose}
+                onOpened={this.onOpen}
+                onClosingState={this.onClosingState}
+            >
+
+                <Text style={ styles.heading }>User Details</Text>
+
+                <Image
+                    source={{ uri: 'https://pbs.twimg.com/profile_images/915314874212868096/pn-v8Ru7_400x400.jpg'}}
+                    style={ styles.profilePicture }
+                />
+
+                <Text style={ styles.nameText }>{ this.state.staffData.name }</Text>
+                <Text style={ styles.classText }>Staff</Text>
+
+                {/* DATA */}
+                <View style={ styles.dataWrapper }>
+
+                    {/* EACH DATA */}
+                    <View style={ styles.dataRow }>
+                        <Text style={ styles.dataName }><FontAwesome name='id-card' size={15}></FontAwesome> &nbsp;&nbsp; NIC</Text>
+                        <Text style={ styles.dataValue }>{ this.state.staffData.nic }</Text>
+                    </View>
+
+                    {/* EACH DATA */}
+                    <View style={ styles.dataRow }>
+                        <Text style={ styles.dataName }><FontAwesome name='hashtag' size={15}></FontAwesome> &nbsp;&nbsp; Employer No</Text>
+                        <Text style={ styles.dataValue }>{ this.state.staffData.emp_no }</Text>
+                    </View>
+
+                    {/* EACH DATA */}
+                    <View style={ styles.dataRow }>
+                        <Text style={ styles.dataName }><FontAwesome name='birthday-cake' size={15}></FontAwesome> &nbsp;&nbsp; Birthday</Text>
+                        <Text style={ styles.dataValue }>{ this.state.staffData.dob }</Text>
+                    </View>
+
+                    {/* EACH DATA */}
+                    <View style={ styles.dataRow }>
+                        <Text style={ styles.dataName }><FontAwesome name='phone' size={15}></FontAwesome> &nbsp;&nbsp; Phone</Text>
+                        <Text style={ styles.dataValue }>{ this.state.staffData.phone }</Text>
+                    </View>
+
+                    {/* EACH DATA */}
+                    <View style={ styles.dataRow }>
+                        <Text style={ styles.dataName }><FontAwesome name='map-marker' size={15}></FontAwesome> &nbsp;&nbsp; City</Text>
+                        <Text style={ styles.dataValue }>{ this.state.staffData.city }</Text>
+                    </View>
+
+                    <View style={{ padding: 50, alignItems: 'center', }}>
+                        <TouchableOpacity style={ styles.successButton } onPress={ () => this.refs.staffDetailModal.close() }>
+
+                            <View style={{flexGrow: 1, justifyContent:'center', alignItems: 'center', flexDirection: 'row' }}>
+                                <Icon name="ios-checkmark" size={30} color={'white'} />
+                                <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}> &nbsp; OK</Text>
+                            </View>
+                            
+                        </TouchableOpacity>
+                    </View>
+
+                </View>
+                
+            </Modal>
             </>
         )
     }
