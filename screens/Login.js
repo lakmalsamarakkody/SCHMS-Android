@@ -35,13 +35,15 @@ export default class Login extends Component {
         header: null
     }
 
+
+
     onLoginPress = () => {
 
         let payload = new FormData
         payload.append('username', this.state.username)
         payload.append('password', this.state.password)
 
-        fetch("http://192.168.1.7:9090/api/auth", {
+        fetch("https://schms.lakmal.xyz/api/auth", {
             method: 'POST',
             headers: {
                 'Content-Type': 'multipart/form-data'
@@ -57,6 +59,8 @@ export default class Login extends Component {
             }
         })
     }
+
+
 
     render = () => {
         return(
@@ -77,7 +81,7 @@ export default class Login extends Component {
 
                     <Button
                         title="Sign In"
-                        onPress={() => this.onLoginPress() }
+                        onPress={ () => this.onLoginPress() }
                     />
 
                 </View>

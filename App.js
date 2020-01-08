@@ -12,6 +12,7 @@ import Login from './screens/Login'
 import Scan from './screens/Scan'
 
 
+// DEFINE ACTIVITIES
 const MainNavigator = createStackNavigator(
 	{
 		Login: {
@@ -26,6 +27,6 @@ const MainNavigator = createStackNavigator(
 	}
 );
 
+// EXPORT
 const App = createAppContainer(MainNavigator);
-
 export default App;

@@ -43,8 +43,8 @@ export default class Scan extends Component {
             qr_type: null,
             switchValue: 'attendance',
             attendanceModalData: {
-                name: "Srivin",
-                type: "Staff"
+                name: "",
+                type: ""
             },
             studentData: {
                 name: null,
@@ -79,7 +79,7 @@ export default class Scan extends Component {
 
 
         // ATTENDANCE API
-        fetch("http://192.168.1.7:9090/api/attendance/mark", {
+        fetch("https://schms.lakmal.xyz/api/attendance/mark", {
             method: 'POST',
             headers: {
                 'Content-Type': 'multipart/form-data'
@@ -90,7 +90,7 @@ export default class Scan extends Component {
         .then(Response => {
             if ( Response.status === 'success' ) {
                 Vibration.vibrate(100);
-                ToastAndroid.showWithGravity3AndOffset(
+                ToastAndroid.showWithGravityAndOffset(
                     'Successfully Makred !',
                     ToastAndroid.SHORT,
                     ToastAndroid.BOTTOM,
@@ -156,7 +156,7 @@ export default class Scan extends Component {
         payload.append('id', QRDetails[1])
         payload.append('type', QRType)
 
-        fetch("http://192.168.1.7:9090/api/details", {
+        fetch("https://schms.lakmal.xyz/api/details", {
             method: 'POST',
             headers: {
                 'Content-Type': 'multipart/form-data'
@@ -177,7 +177,8 @@ export default class Scan extends Component {
                 this.setState({
                     attendanceModalData: {
                         name: Response.data.name.full,
-                        type: QRType.charAt(0).toUpperCase() + QRType.slice(1)
+                        type: QRType.charAt(0).toUpperCase() + QRType.slice(1),
+                        propic: "https://schms.lakmal.xyz/data/propic/" + QRType + "/" + Response.data.id
                     }
                 })
 
@@ -192,7 +193,8 @@ export default class Scan extends Component {
                             dob: Response.data.dob,
                             gender: Response.data.gender,
                             city: Response.data.address.city,
-                            phone: Response.data.phone[Object.keys(Response.data.phone)[0]]
+                            phone: Response.data.phone.mobile,
+                            propic: "https://schms.lakmal.xyz/data/propic/" + QRType + "/" + Response.data.id
                         }
                     })
                 } else {
@@ -202,8 +204,9 @@ export default class Scan extends Component {
                             nic: Response.data.nic,
                             emp_no: Response.data.emp_no,
                             dob: Response.data.dob,
-                            phone: Response.data.phone[Object.keys(Response.data.phone)[0]],
-                            city: Response.data.address.city
+                            phone: Response.data.phone.mobile,
+                            city: Response.data.address.city,
+                            propic: "https://schms.lakmal.xyz/data/propic/" + QRType + "/" + Response.data.id
                         }
                     })
                 }
@@ -275,7 +278,7 @@ export default class Scan extends Component {
 
                 <Image
                     style={ styles.profilePicture }
-                    source={{uri: 'https://pbs.twimg.com/profile_images/915314874212868096/pn-v8Ru7_400x400.jpg'}}
+                    source={{uri: this.state.attendanceModalData.propic}}
                 />
 
                 <Text style={ styles.nameText }>{ this.state.attendanceModalData.name }</Text>
@@ -318,7 +321,7 @@ export default class Scan extends Component {
                 <Text style={ styles.heading }>User Details</Text>
 
                 <Image
-                    source={{ uri: 'https://pbs.twimg.com/profile_images/915314874212868096/pn-v8Ru7_400x400.jpg'}}
+                    source={{ uri: this.state.studentData.propic}}
                     style={ styles.profilePicture }
                 />
 
@@ -381,7 +384,7 @@ export default class Scan extends Component {
                 <Text style={ styles.heading }>User Details</Text>
 
                 <Image
-                    source={{ uri: 'https://pbs.twimg.com/profile_images/915314874212868096/pn-v8Ru7_400x400.jpg'}}
+                    source={{ uri: this.state.staffData.propic}}
                     style={ styles.profilePicture }
                 />
 
